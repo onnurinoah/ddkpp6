@@ -1,63 +1,82 @@
-const listContainer = document.getElementById('adminList');
+// js/admin.js
 
-// 데이터 실시간 감지
+// 1. HTML의 ID와 정확히 일치시켜야 합니다 (admin-list)
+const listContainer = document.getElementById('admin-list');
+
+// 2. 데이터 실시간 감지
 keywordsRef.on('value', (snapshot) => {
     const data = snapshot.val();
     const keywords = [];
 
-    // 데이터를 배열로 변환
     for (let key in data) {
         keywords.push({ id: key, ...data[key] });
     }
 
-    renderList(keywords);
+    renderTable(keywords);
 });
 
-function renderList(keywords) {
+function renderTable(keywords) {
+    if (!listContainer) return;
     listContainer.innerHTML = '';
 
-    // 정렬: 노출된 것(isShown=true)을 위로, 그 다음 최신순
-    keywords.sort((a, b) => {
-        if (a.isShown === b.isShown) {
-            return b.timestamp - a.timestamp; // 최신순
-        }
-        return a.isShown ? -1 : 1; // 노출된게 위로
-    });
+    // 정렬: 최신순 (timestamp 기준)
+    keywords.sort((a, b) => b.timestamp - a.timestamp);
 
     keywords.forEach(k => {
-        const li = document.createElement('li');
-        if (k.isShown) li.classList.add('active'); // 초록색 배경
+        const tr = document.createElement('tr');
 
-        // 1. 체크박스 (볼드체)
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.className = 'bold-check';
-        checkbox.checked = k.isBold;
+        // --- 1. 키워드 텍스트 ---
+        const tdText = document.createElement('td');
+        tdText.textContent = k.text;
+        if (k.isBold) tdText.style.fontWeight = 'bold';
         
-        checkbox.addEventListener('click', (e) => {
-            e.stopPropagation(); // 부모 클릭 방지
-            db.ref('keywords/' + k.id).update({ isBold: !k.isBold });
+        // --- 2. 상태 표시 (뱃지 디자인) ---
+        const tdStatus = document.createElement('td');
+        const statusBadge = document.createElement('span');
+        statusBadge.className = k.isShown ? 'status-badge approved' : 'status-badge pending';
+        statusBadge.textContent = k.isShown ? '노출중' : '대기';
+        tdStatus.appendChild(statusBadge);
+
+        // --- 3. 강조(Bold) 체크박스 ---
+        const tdBold = document.createElement('td');
+        const boldCheck = document.createElement('input');
+        boldCheck.type = 'checkbox';
+        boldCheck.checked = k.isBold;
+        boldCheck.addEventListener('change', () => {
+            keywordsRef.child(k.id).update({ isBold: boldCheck.checked });
         });
+        tdBold.appendChild(boldCheck);
 
-        // 2. 텍스트 (클릭 시 노출 토글)
-        const span = document.createElement('span');
-        span.className = 'text-area';
-        span.textContent = k.text;
-        if (k.isBold) span.style.fontWeight = 'bold';
+        // --- 4. 관리 버튼 (노출 토글 / 삭제) ---
+        const tdAction = document.createElement('td');
+        
+        // 노출/숨김 버튼
+        const toggleBtn = document.createElement('button');
+        toggleBtn.className = 'btn-action btn-approve';
+        toggleBtn.textContent = k.isShown ? '숨기기' : '노출하기';
+        toggleBtn.onclick = () => {
+            keywordsRef.child(k.id).update({ isShown: !k.isShown });
+        };
 
-        // 3. 상태 메시지
-        const status = document.createElement('span');
-        status.className = 'status';
-        status.textContent = k.isShown ? '[노출중]' : '[대기]';
+        // 삭제 버튼
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'btn-action btn-delete';
+        deleteBtn.textContent = '삭제';
+        deleteBtn.onclick = () => {
+            if(confirm('정말 삭제하시겠습니까?')) {
+                keywordsRef.child(k.id).remove();
+            }
+        };
 
-        // 리스트 클릭 이벤트 (노출/숨김 토글)
-        li.addEventListener('click', () => {
-            db.ref('keywords/' + k.id).update({ isShown: !k.isShown });
-        });
+        tdAction.appendChild(toggleBtn);
+        tdAction.appendChild(deleteBtn);
 
-        li.appendChild(checkbox);
-        li.appendChild(span);
-        li.appendChild(status);
-        listContainer.appendChild(li);
+        // 행에 열 추가
+        tr.appendChild(tdText);
+        tr.appendChild(tdStatus);
+        tr.appendChild(tdBold);
+        tr.appendChild(tdAction);
+
+        listContainer.appendChild(tr);
     });
 }
