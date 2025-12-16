@@ -4,29 +4,79 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>관리자 페이지</title>
-    <style>
-        body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; }
-        ul { list-style: none; padding: 0; }
-        li { display: flex; align-items: center; padding: 10px; margin-bottom: 5px; border: 1px solid #ddd; background: #f9f9f9; transition: all 0.3s; }
-        
-        /* 승인된 상태 스타일 */
-        li.active { background-color: #d4edda; border-color: #c3e6cb; }
-        
-        .text-area { flex-grow: 1; cursor: pointer; margin-left: 10px; }
-        .bold-check { transform: scale(1.5); cursor: pointer; }
-        .status { font-size: 0.8rem; color: #666; margin-left: 10px; }
-    </style>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <h1>키워드 관리자</h1>
-    <p>💡 텍스트 클릭: <strong>노출/숨김</strong> | 체크박스: <strong>볼드체</strong></p>
-    <ul id="adminList">
-        </ul>
+
+    <div id="login-overlay">
+        <div class="login-box">
+            <h2>관리자 접속</h2>
+            <div class="input-group">
+                <input type="password" id="admin-password" placeholder="비밀번호 입력">
+                <button class="btn-submit" onclick="checkLogin()">로그인</button>
+            </div>
+            <p id="login-msg" style="color: red; margin-top: 10px; font-size: 12px;"></p>
+        </div>
+    </div>
+
+    <div id="admin-content" class="container" style="display: none;">
+        <div class="card" style="max-width: 900px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h1>🛠️ 키워드 관리</h1>
+                <button onclick="logout()" style="padding: 5px 10px; border:1px solid #ddd; background:white; border-radius:5px; cursor:pointer;">로그아웃</button>
+            </div>
+            
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th width="40%">키워드</th>
+                        <th width="15%">상태</th>
+                        <th width="10%">강조</th>
+                        <th width="35%">관리</th>
+                    </tr>
+                </thead>
+                <tbody id="admin-list">
+                    </tbody>
+            </table>
+        </div>
+    </div>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-
     <script src="js/firebaseConfig.js"></script>
     <script src="js/admin.js"></script>
+
+    <script>
+        // 비밀번호 체크 로직
+        function checkLogin() {
+            const input = document.getElementById('admin-password').value;
+            const msg = document.getElementById('login-msg');
+            
+            if (input === '1225') {
+                document.getElementById('login-overlay').style.display = 'none';
+                document.getElementById('admin-content').style.display = 'block';
+                // 로그인 성공 시 로컬스토리지에 저장 (새로고침 해도 유지하려면)
+                sessionStorage.setItem('isAdmin', 'true');
+            } else {
+                msg.textContent = '비밀번호가 틀렸습니다.';
+            }
+        }
+
+        function logout() {
+            sessionStorage.removeItem('isAdmin');
+            location.reload();
+        }
+
+        // 엔터키 로그인 지원
+        document.getElementById('admin-password').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') checkLogin();
+        });
+
+        // 페이지 로드 시 로그인 유지 확인 (선택사항)
+        if (sessionStorage.getItem('isAdmin') === 'true') {
+             document.getElementById('login-overlay').style.display = 'none';
+             document.getElementById('admin-content').style.display = 'block';
+        }
+    </script>
 </body>
 </html>

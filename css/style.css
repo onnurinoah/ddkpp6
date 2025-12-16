@@ -1,0 +1,199 @@
+/* css/style.css */
+
+/* --- 공통 설정 (Global) --- */
+:root {
+    --primary-color: #337ab7;       /* 메인 파란색 */
+    --accent-color: #5bc0de;        /* 하늘색 포인트 */
+    --success-color: #5cb85c;       /* 승인 초록색 */
+    --danger-color: #d9534f;        /* 삭제 빨간색 */
+    --bg-gradient: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+    --font-main: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-main);
+    background: var(--bg-gradient);
+    min-height: 100vh;
+    color: #333;
+}
+
+/* --- 공통: 컨테이너 및 카드 스타일 --- */
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    text-align: center;
+}
+
+.card {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    margin-top: 50px;
+}
+
+h1 {
+    color: var(--primary-color);
+    margin-bottom: 20px;
+    font-weight: 300;
+}
+
+/* --- Input Page (입력 화면) --- */
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+input[type="text"], input[type="password"] {
+    padding: 15px;
+    font-size: 16px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+input[type="text"]:focus, input[type="password"]:focus {
+    border-color: var(--primary-color);
+}
+
+.btn-submit {
+    padding: 15px;
+    font-size: 18px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s;
+    font-weight: bold;
+}
+
+.btn-submit:hover {
+    background-color: #286090;
+}
+
+/* --- Display Page (노출 화면 - 트리/구름) --- */
+#display-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: hidden; /* 스크롤 방지 */
+    height: 100vh;
+}
+
+#keyword-display-area {
+    flex-grow: 1;
+    width: 100%;
+    position: relative;
+}
+
+/* 트리 기둥 (배경) */
+#keyword-display-area::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 30px;
+    height: 80%;
+    background: linear-gradient(to top, #8b5a2b, #a07855);
+    border-radius: 15px 15px 0 0;
+    opacity: 0.6;
+    z-index: 0;
+}
+
+.keyword-cloud {
+    position: absolute;
+    background: white;
+    color: var(--primary-color);
+    padding: 10px 20px;
+    border-radius: 50px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    font-size: 16px;
+    white-space: nowrap;
+    z-index: 1;
+    transition: all 0.5s ease;
+    opacity: 0; /* JS로 등장 효과 */
+    animation: fadeIn 0.5s forwards;
+}
+
+.keyword-cloud.is-bold {
+    font-weight: 900;
+    font-size: 24px;
+    color: #2a6496;
+    border: 2px solid var(--accent-color);
+}
+
+@keyframes fadeIn {
+    to { opacity: 1; }
+}
+
+/* --- Admin Page (관리자 화면) --- */
+/* 로그인 오버레이 */
+#login-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.85); /* 어두운 배경 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.login-box {
+    background: white;
+    padding: 40px;
+    border-radius: 10px;
+    text-align: center;
+    width: 300px;
+}
+
+/* 관리자 테이블 */
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.admin-table th, .admin-table td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    text-align: left;
+}
+
+.admin-table th {
+    background-color: #f8f9fa;
+    color: #666;
+}
+
+/* 관리자 버튼들 */
+.btn-action {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    margin-right: 5px;
+    color: white;
+}
+
+.btn-approve { background-color: var(--success-color); }
+.btn-bold { background-color: var(--accent-color); }
+.btn-delete { background-color: var(--danger-color); }
+
+/* 상태 뱃지 */
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: bold;
+    color: white;
+}
+.status-badge.pending { background-color: #bbb; }
+.status-badge.approved { background-color: var(--success-color); }
