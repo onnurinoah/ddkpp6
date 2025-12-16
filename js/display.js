@@ -1,28 +1,6 @@
 // js/display.js
-// Firebase 및 DOM 요소 참조는 이미 다른 파일(firebaseConfig.js, display.html)에서 설정되었다고 가정합니다.
 
-const activeQuery = keywordsRef.orderByChild('isShown').equalTo(true);
-
-activeQuery.on('value', (snapshot) => {
-    const data = snapshot.val();
-    const keywords = [];
-
-    if (data) {
-        Object.keys(data).forEach(key => {
-            // 키워드 ID (key)와 데이터(value)를 함께 배열에 추가
-            keywords.push({
-                id: key,
-                ...data[key]
-            });
-        });
-    }
-
-    // 최종적으로 화면에 표시할 키워드의 최대 개수를 50개로 제한
-    const maxKeywords = 50;
-    const finalKeywords = keywords.slice(0, maxKeywords); 
-
-    renderPlainDisplay(finalKeywords);
-});
+// ... (activeQuery 및 activeQuery.on('value', ...) 로직은 이전과 동일) ...
 
 // 두 사각형(rect1과 rect2)이 겹치는지 확인하는 헬퍼 함수
 function isColliding(rect1, rect2) {
@@ -37,16 +15,17 @@ function renderPlainDisplay(keywords) {
     const displayArea = document.getElementById('keyword-display-area');
     displayArea.innerHTML = '';
 
-    const areaWidth = displayArea.offsetWidth; // window.innerWidth 대신 컨테이너 크기 사용 권장
-    const areaHeight = displayArea.offsetHeight; // window.innerHeight 대신 컨테이너 크기 사용 권장
+    const areaWidth = displayArea.offsetWidth;
+    const areaHeight = displayArea.offsetHeight;
     
     // 이미 배치된 키워드들의 위치와 크기를 저장할 배열
     const placedRects = []; 
-    const maxAttempts = 50; // 위치 탐색 최대 시도 횟수
+    const maxAttempts = 50; 
+    const padding = 10; // 키워드 사이의 최소 여백 (픽셀)
 
     keywords.forEach(keyword => {
         const el = document.createElement('div');
-        el.classList.add('keyword'); // 'keyword-cloud' 대신 통일된 'keyword' 클래스 사용
+        el.classList.add('keyword'); 
         el.textContent = keyword.text;
 
         // 1. 스타일 및 상태 설정
@@ -54,7 +33,6 @@ function renderPlainDisplay(keywords) {
             el.classList.add('is-bold');
         }
 
-        // 상태 표시 span 추가 (이전 CSS/JS 버전에서 정의됨)
         const statusSpan = document.createElement('span');
         statusSpan.classList.add('status');
         const currentStatus = keyword.status || 'approved'; 
@@ -65,7 +43,9 @@ function renderPlainDisplay(keywords) {
 
         // 2. 초기 스타일 설정 및 DOM에 잠시 추가 (크기 측정을 위함)
         el.style.position = 'absolute';
-        el.style.opacity = 0; // 잠시 숨김
+        el.style.opacity = 0; 
+        el.style.left = '0'; // 초기 위치를 화면 밖으로 설정하여 측정 오류 방지
+        el.style.top = '0';
         displayArea.appendChild(el);
 
 
@@ -74,30 +54,33 @@ function renderPlainDisplay(keywords) {
         let xPos, yPos;
         let finalRect;
 
+        // **요소의 크기를 측정** (DOM에 추가된 후에만 가능)
+        const elWidth = el.offsetWidth;
+        const elHeight = el.offsetHeight;
+
         // 3. 충돌 감지 루프 시작
         while (attempt < maxAttempts && !foundPosition) {
             
-            // 화면 안에서 무작위 좌표 생성 (여백 10% 확보)
+            // 화면 안에서 무작위 좌표 생성 (중심점 기준)
+            // 화면 영역 (0.1 ~ 0.9) 범위 내에서 중앙 좌표 생성
             xPos = Math.random() * (areaWidth * 0.8) + (areaWidth * 0.1);
             yPos = Math.random() * (areaHeight * 0.8) + (areaHeight * 0.1);
 
-            // 요소에 임시 위치 적용
-            el.style.left = `${xPos}px`;
-            el.style.top = `${yPos}px`;
-            el.style.transform = 'translate(-50%, -50%)'; // 중심점 기준 배치
-
-            // 현재 요소의 크기 및 위치 정보 측정
-            // Note: getBoundingClientRect()는 뷰포트 기준이므로,
-            // 상대 위치 계산을 위해 left/top 값을 조정하여 컨테이너 기준 위치로 변환해야 합니다.
-            const rect = el.getBoundingClientRect();
-            const displayRect = displayArea.getBoundingClientRect();
-
+            // 최종 배치될 예상 사각형 영역 (컨테이너 기준)
             finalRect = {
-                left: rect.left - displayRect.left,
-                right: rect.right - displayRect.left,
-                top: rect.top - displayRect.top,
-                bottom: rect.bottom - displayRect.top,
+                // translate(-50%, -50%)를 고려하여 사각형 경계를 계산합니다.
+                left: xPos - elWidth / 2 - padding,
+                right: xPos + elWidth / 2 + padding,
+                top: yPos - elHeight / 2 - padding,
+                bottom: yPos + elHeight / 2 + padding,
             };
+            
+            // 화면 경계를 벗어나는지 1차 확인
+            if (finalRect.left < 0 || finalRect.right > areaWidth ||
+                finalRect.top < 0 || finalRect.bottom > areaHeight) {
+                attempt++;
+                continue; // 경계를 벗어남
+            }
 
             // 모든 배치된 요소와 충돌하는지 확인
             let isOverlapping = false;
@@ -117,17 +100,20 @@ function renderPlainDisplay(keywords) {
 
         // 4. 위치 확정 및 배열에 저장
         if (foundPosition) {
-            // 위치 적용은 이미 루프에서 완료됨
+            // 위치 적용
+            el.style.left = `${xPos}px`;
+            el.style.top = `${yPos}px`;
+            el.style.transform = 'translate(-50%, -50%)'; // CSS 중심점 배치
+
             placedRects.push(finalRect); // 배치된 위치와 크기를 목록에 추가
         } else {
-            // 위치를 찾지 못하면 해당 키워드는 표시하지 않음
+            // 위치를 찾지 못하면 해당 키워드는 제거
             displayArea.removeChild(el); 
             console.warn(`키워드 '${keyword.text}'는 공간 부족으로 배치되지 않았습니다.`);
             return;
         }
 
         // 5. 시각화 효과 (부드럽게 나타나기)
-        // opacity를 1로 변경하여 CSS transition 효과 발동
         setTimeout(() => {
              el.style.opacity = 1; 
         }, 50);
