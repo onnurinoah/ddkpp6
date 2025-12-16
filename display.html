@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Display</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #f0f0f0; }
+        #displayArea { position: relative; width: 100vw; height: 100vh; }
+        .keyword-item {
+            position: absolute;
+            font-size: 3rem;
+            white-space: nowrap;
+            transition: all 0.5s ease;
+            font-family: 'Gothic A1', sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <div id="displayArea"></div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <script src="js/firebaseConfig.js"></script>
+    <script src="js/display.js"></script>
+</body>
+</html>

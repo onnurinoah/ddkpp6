@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리자 페이지</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; }
+        ul { list-style: none; padding: 0; }
+        li { display: flex; align-items: center; padding: 10px; margin-bottom: 5px; border: 1px solid #ddd; background: #f9f9f9; transition: all 0.3s; }
+        
+        /* 승인된 상태 스타일 */
+        li.active { background-color: #d4edda; border-color: #c3e6cb; }
+        
+        .text-area { flex-grow: 1; cursor: pointer; margin-left: 10px; }
+        .bold-check { transform: scale(1.5); cursor: pointer; }
+        .status { font-size: 0.8rem; color: #666; margin-left: 10px; }
+    </style>
+</head>
+<body>
+    <h1>키워드 관리자</h1>
+    <p>💡 텍스트 클릭: <strong>노출/숨김</strong> | 체크박스: <strong>볼드체</strong></p>
+    <ul id="adminList">
+        </ul>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <script src="js/firebaseConfig.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+</html>
