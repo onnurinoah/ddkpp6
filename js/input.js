@@ -19,7 +19,7 @@ submitBtn.addEventListener('click', () => {
             timestamp: Date.now()
         })
         .then(() => {
-            alert('성공적으로 전송되었습니다!');
+            alert('발송 성공! 채택되면 화면에 뜹니다!');
             inputField.value = ''; // 입력창 초기화
         })
         .catch((error) => {
